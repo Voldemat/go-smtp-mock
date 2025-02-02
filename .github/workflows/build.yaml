@@ -35,7 +35,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.ref_type == 'tag' }}
-          tags: "vladimirdev635/go-smtp-mock:${{ github.ref }}"
+          tags: "vladimirdev635/go-smtp-mock:${{ github.ref_name }}"
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
