@@ -26,6 +26,12 @@ func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
 	return &Session{bkd: bkd}, nil
 }
 
+func (bkd *Backend) ClearQueue() {
+    for len(bkd.Emails) != 0 {
+        <-bkd.Emails
+    }
+}
+
 func (bkd *Backend) AddEmail(email Email) {
 	if len(bkd.Emails) == cap(bkd.Emails) {
 		<-bkd.Emails
