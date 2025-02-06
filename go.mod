@@ -1,4 +1,4 @@
-module go-smtp-mock
+module github.com/Voldemat/go-smtp-mock
 
 go 1.23.5
 
