@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"go-smtp-mock/emails"
-	"go-smtp-mock/utils"
+	"github.com/Voldemat/go-smtp-mock/emails"
+	"github.com/Voldemat/go-smtp-mock/utils"
 	"log"
 	"net/http"
 	"strconv"

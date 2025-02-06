@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-smtp-mock/emails"
+	"github.com/Voldemat/go-smtp-mock/emails"
 	"log"
 	"net/http"
 	"os"
