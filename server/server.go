@@ -3,42 +3,45 @@ package server
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/Voldemat/go-smtp-mock/emails"
 )
 
+type CreateServerRoutinesArgs struct {
+    Wg *sync.WaitGroup
+    SmtpHost string
+    SmtpPort int
+    SmtpUser string
+    SmtpPassword string
+    HttpHost string
+    HttpPort int
+    QueueSize string
+}
+
 func CreateServerRoutines(
-    wg *sync.WaitGroup,
-    smtpHost string,
-    smtpUser string,
-    smtpPort string,
-    smtpPassword string,
-    queueSize string,
-    httpHost string,
-    httpPort string,
+    args CreateServerRoutinesArgs,
 ) *emails.Backend {
     backend, server := emails.CreateSMTPServer(
-        smtpHost,
-        smtpPort,
-        smtpUser,
-        smtpPassword,
-        queueSize,
+        args.SmtpHost,
+        args.SmtpPort,
+        args.SmtpUser,
+        args.SmtpPassword,
+        args.QueueSize,
     )
     mux := CreateHTTPServer(backend)
-
-	wg.Add(2)
-
+	args.Wg.Add(2)
 	go func() {
-		defer wg.Done()
+		defer args.Wg.Done()
         http.ListenAndServe(
-            httpHost + ":" + httpPort,
+            args.HttpHost + ":" + strconv.Itoa(args.HttpPort),
             mux,
         )
 	}()
 
 	go func() {
-		defer wg.Done()
+		defer args.Wg.Done()
         err := server.ListenAndServe()
         if err != nil {
             log.Fatal(err)

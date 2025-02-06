@@ -90,7 +90,7 @@ func (s *Session) Logout() error {
 
 func CreateSMTPServer(
 	host string,
-	port string,
+	port int,
 	username string,
 	password string,
 	queueSizeString string,
@@ -105,7 +105,7 @@ func CreateSMTPServer(
 		Emails:   make(chan Email, queueSize),
 	}
 	s := smtp.NewServer(be)
-	s.Addr = host + ":" + port
+	s.Addr = host + ":" + strconv.Itoa(port)
 	s.Domain = host
 	s.WriteTimeout = 10 * time.Second
 	s.ReadTimeout = 10 * time.Second
