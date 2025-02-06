@@ -17,7 +17,7 @@ func CreateServerRoutines(
     queueSize string,
     httpHost string,
     httpPort string,
-) {
+) *emails.Backend {
     backend, server := emails.CreateSMTPServer(
         smtpHost,
         smtpPort,
@@ -44,4 +44,5 @@ func CreateServerRoutines(
             log.Fatal(err)
         }
 	}()
+    return backend
 }
