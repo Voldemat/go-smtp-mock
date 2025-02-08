@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/emersion/go-sasl"
@@ -20,23 +21,28 @@ type Backend struct {
 	username string
 	password string
 	Emails   chan Email
+    Mutex sync.Mutex
 }
 
 func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
-	return &Session{bkd: bkd}, nil
+    return &Session{bkd: bkd}, nil
 }
 
 func (bkd *Backend) ClearQueue() {
+    bkd.Mutex.Lock()
     for len(bkd.Emails) != 0 {
         <-bkd.Emails
     }
+    bkd.Mutex.Unlock()
 }
 
 func (bkd *Backend) AddEmail(email Email) {
+    bkd.Mutex.Lock()
 	if len(bkd.Emails) == cap(bkd.Emails) {
 		<-bkd.Emails
 	}
 	bkd.Emails <- email
+    bkd.Mutex.Unlock()
 }
 
 type Session struct {
