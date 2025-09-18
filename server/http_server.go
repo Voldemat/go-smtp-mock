@@ -13,7 +13,7 @@ import (
 func CreateHTTPServer(smtpBackend *emails.Backend) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/clear-queue", func(w http.ResponseWriter, r *http.Request) {
-        smtpBackend.ClearQueue()
+		smtpBackend.ClearQueue()
 		w.WriteHeader(200)
 		w.Header().Add("Content-Type", "application/json")
 		message := []byte("null")

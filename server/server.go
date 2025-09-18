@@ -10,42 +10,44 @@ import (
 )
 
 type CreateServerRoutinesArgs struct {
-    Wg *sync.WaitGroup
-    SmtpHost string
-    SmtpPort int
-    SmtpUser string
-    SmtpPassword string
-    HttpHost string
-    HttpPort int
-    QueueSize string
+	Wg           *sync.WaitGroup
+	SmtpHost     string
+	SmtpPort     int
+	SmtpUser     string
+	SmtpPassword string
+	HttpHost     string
+	HttpPort     int
+	QueueSize    string
+	OnEmail      func(emails.Email)
 }
 
 func CreateServerRoutines(
-    args CreateServerRoutinesArgs,
+	args CreateServerRoutinesArgs,
 ) *emails.Backend {
-    backend, server := emails.CreateSMTPServer(
-        args.SmtpHost,
-        args.SmtpPort,
-        args.SmtpUser,
-        args.SmtpPassword,
-        args.QueueSize,
-    )
-    mux := CreateHTTPServer(backend)
+	backend, server := emails.CreateSMTPServer(
+		args.SmtpHost,
+		args.SmtpPort,
+		args.SmtpUser,
+		args.SmtpPassword,
+		args.QueueSize,
+		args.OnEmail,
+	)
+	mux := CreateHTTPServer(backend)
 	args.Wg.Add(2)
 	go func() {
 		defer args.Wg.Done()
-        http.ListenAndServe(
-            args.HttpHost + ":" + strconv.Itoa(args.HttpPort),
-            mux,
-        )
+		http.ListenAndServe(
+			args.HttpHost+":"+strconv.Itoa(args.HttpPort),
+			mux,
+		)
 	}()
 
 	go func() {
 		defer args.Wg.Done()
-        err := server.ListenAndServe()
-        if err != nil {
-            log.Fatal(err)
-        }
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}()
-    return backend
+	return backend
 }

@@ -21,28 +21,30 @@ type Backend struct {
 	username string
 	password string
 	Emails   chan Email
-    Mutex sync.Mutex
+	OnEmail  func(Email)
+	Mutex    sync.Mutex
 }
 
 func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
-    return &Session{bkd: bkd}, nil
+	return &Session{bkd: bkd}, nil
 }
 
 func (bkd *Backend) ClearQueue() {
-    bkd.Mutex.Lock()
-    for len(bkd.Emails) != 0 {
-        <-bkd.Emails
-    }
-    bkd.Mutex.Unlock()
+	bkd.Mutex.Lock()
+	for len(bkd.Emails) != 0 {
+		<-bkd.Emails
+	}
+	bkd.Mutex.Unlock()
 }
 
 func (bkd *Backend) AddEmail(email Email) {
-    bkd.Mutex.Lock()
+	bkd.Mutex.Lock()
 	if len(bkd.Emails) == cap(bkd.Emails) {
 		<-bkd.Emails
 	}
 	bkd.Emails <- email
-    bkd.Mutex.Unlock()
+	bkd.Mutex.Unlock()
+	bkd.OnEmail(email)
 }
 
 type Session struct {
@@ -100,14 +102,16 @@ func CreateSMTPServer(
 	username string,
 	password string,
 	queueSizeString string,
+	onEmail func(Email),
 ) (*Backend, *smtp.Server) {
-    queueSize, err := strconv.ParseInt(queueSizeString, 10, 64)
-    if err != nil {
-        panic(err)
-    }
+	queueSize, err := strconv.ParseInt(queueSizeString, 10, 64)
+	if err != nil {
+		panic(err)
+	}
 	be := &Backend{
 		username: username,
 		password: password,
+		OnEmail:  onEmail,
 		Emails:   make(chan Email, queueSize),
 	}
 	s := smtp.NewServer(be)
